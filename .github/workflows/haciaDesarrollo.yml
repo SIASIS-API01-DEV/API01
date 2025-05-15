@@ -44,7 +44,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No hay cambios para sincronizar"
           else
-            git commit -m "Sync changes from master branch (includes deleted files)"
+            git commit -m "Sync changes from master branch (includes deleted files) $(date +'%Y-%m-%d %H:%M:%S')"
             echo "Haciendo push de los cambios al repositorio destino..."
             git push origin master
           fi
