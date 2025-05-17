@@ -13,6 +13,8 @@ import { esOperacionBDLectura } from "../../../src/lib/helpers/comprobations/esO
 import { getRDP02DatabaseURLForThisInstance } from "../../../src/lib/helpers/instances/getRDP02DatabaseURLForThisInstance";
 import { getInstanciasRDP02AfectadasPorRoles } from "../../../src/lib/helpers/instances/getInstanciasRDP02AfectadasPorRoles";
 import { consultarConEMCS01 } from "../../external/github/EMCS01/consultarConEMCS01";
+import { ENTORNO } from "../../../src/constants/ENTORNO";
+import { Entorno } from "../../../src/interfaces/shared/Entornos";
 
 dotenv.config();
 
@@ -75,16 +77,15 @@ function getRandomInstanceForRole(rol: RolesSistema): RDP02 {
 function getRandomInstance(): RDP02 {
   // Obtener todas las instancias disponibles
   const allInstances = Object.values(RDP02);
-  
+
   if (allInstances.length === 0) {
     throw new Error("No hay instancias configuradas en el sistema");
   }
-  
+
   // Seleccionar una instancia aleatoria
   const randomIndex = Math.floor(Math.random() * allInstances.length);
   return allInstances[randomIndex];
 }
-
 
 /**
  * Ejecuta una consulta SQL en la base de datos
@@ -115,7 +116,7 @@ export async function query<T extends QueryResultRow = any>(
         console.log(
           `Operación de lectura: Seleccionada instancia aleatoria ${instanciaEnUso} para rol ${rol}`
         );
-      } 
+      }
       // Si no hay rol especificado, seleccionar cualquier instancia
       else {
         instanciaEnUso = getRandomInstance();
@@ -195,9 +196,9 @@ export async function query<T extends QueryResultRow = any>(
             )}`
           );
 
-          // Ejecutar de forma asíncrona para no retrasar la respuesta
-          await consultarConEMCS01(text, params, instanciasAActualizar).catch((err) =>
-            console.error("Error en replicación asíncrona:", err)
+          // Ejecutar EMCS01 si no nos encontramos en entorno local
+          await consultarConEMCS01(text, params, instanciasAActualizar).catch(
+            (err) => console.error("Error en replicación asíncrona:", err)
           );
         }
       }
