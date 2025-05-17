@@ -168,7 +168,7 @@ router.put(
       return res.status(200).json({
         success: true,
         message:
-          "Se ha enviado un código de verificación al nuevo correo electrónico",
+          "Se ha enviado un código de verificación al nuevo correo electrónico.",
         otpExpireTime: tiempoExpiracionSegundos,
       } as CambiarCorreoSuccessResponse);
     } catch (error) {
