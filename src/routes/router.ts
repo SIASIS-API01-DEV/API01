@@ -1,5 +1,5 @@
 // routes/index.ts
-import { Request, Response, Router } from "express";
+import { Router } from "express";
 
 import { UserAuthenticatedAPI01 } from "../interfaces/shared/JWTPayload";
 import AllErrorTypes from "../interfaces/shared/apis/errors";
