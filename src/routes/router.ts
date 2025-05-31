@@ -47,25 +47,6 @@ declare global {
   }
 }
 
-router.get("/timestamp", ((req: Request, res: Response) => {
-  const { timestamp } = req.query;
-
-  if (timestamp) {
-    const date = new Date(Number(timestamp));
-    if (isNaN(date.getTime())) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid timestamp format",
-      });
-    }
-    return res.status(200).json({
-      success: true,
-      message: "API is running",
-      timestamp: new Date(Number(timestamp)),
-    });
-  }
-}) as any);
-
 router.use("/login", loginRouter);
 
 router.use(
