@@ -18,7 +18,7 @@ export async function buscarDirectivoPorDNIGenerico(
   instanciaEnUso?: RDP02
 ): Promise<DirectivoGenerico | null> {
   const sql = `
-    SELECT 
+    SELECT
       "DNI",
       "Nombres",
       "Apellidos", 
@@ -29,6 +29,33 @@ export async function buscarDirectivoPorDNIGenerico(
   `;
 
   const result = await query(instanciaEnUso, sql, [dni]);
+
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  return result.rows[0] as DirectivoGenerico;
+}
+
+/**
+ * Busca directivo por DNI para datos genéricos
+ */
+export async function buscarDirectivoPorIDGenerico(
+  id: number,
+  instanciaEnUso?: RDP02
+): Promise<DirectivoGenerico | null> {
+  const sql = `
+    SELECT
+      "DNI",
+      "Nombres",
+      "Apellidos", 
+      "Genero"
+    FROM "T_Directivos"
+    WHERE "Id_Directivo" = $1
+    LIMIT 1
+  `;
+
+  const result = await query(instanciaEnUso, sql, [id]);
 
   if (result.rows.length === 0) {
     return null;
@@ -194,9 +221,9 @@ export async function buscarPersonalAdministrativoPorDNIGenerico(
  * @param instanciaEnUso Instancia específica donde ejecutar la consulta (opcional)
  * @returns Información básica del usuario o null si no existe
  */
-export async function buscarUsuarioGenericoPorRolYDNI(
+export async function buscarUsuarioGenericoPorRolyIDoDNI(
   rol: RolesSistema,
-  dni: string,
+  idOdni: string | number,
   instanciaEnUso?: RDP02
 ): Promise<GenericUser | null> {
   let userData: any = null;
@@ -205,18 +232,24 @@ export async function buscarUsuarioGenericoPorRolYDNI(
   // Buscar según el rol específico
   switch (rol) {
     case RolesSistema.Directivo:
-      userData = await buscarDirectivoPorDNIGenerico(dni, instanciaEnUso);
+      userData = await buscarDirectivoPorIDGenerico(
+        idOdni as number,
+        instanciaEnUso
+      );
       dniField = userData?.DNI || "";
       break;
 
     case RolesSistema.Auxiliar:
-      userData = await buscarAuxiliarPorDNIGenerico(dni, instanciaEnUso);
+      userData = await buscarAuxiliarPorDNIGenerico(
+        idOdni as string,
+        instanciaEnUso
+      );
       dniField = userData?.DNI_Auxiliar || "";
       break;
 
     case RolesSistema.ProfesorPrimaria:
       userData = await buscarProfesorPrimariaPorDNIGenerico(
-        dni,
+        idOdni as string,
         instanciaEnUso
       );
       dniField = userData?.DNI_Profesor_Primaria || "";
@@ -224,20 +257,23 @@ export async function buscarUsuarioGenericoPorRolYDNI(
 
     case RolesSistema.ProfesorSecundaria:
       userData = await buscarProfesorSecundariaPorDNIGenerico(
-        dni,
+        idOdni as string,
         instanciaEnUso
       );
       dniField = userData?.DNI_Profesor_Secundaria || "";
       break;
 
     case RolesSistema.Tutor:
-      userData = await buscarTutorPorDNIGenerico(dni, instanciaEnUso);
+      userData = await buscarTutorPorDNIGenerico(
+        idOdni as string,
+        instanciaEnUso
+      );
       dniField = userData?.DNI_Profesor_Secundaria || "";
       break;
 
     case RolesSistema.PersonalAdministrativo:
       userData = await buscarPersonalAdministrativoPorDNIGenerico(
-        dni,
+        idOdni as string,
         instanciaEnUso
       );
       dniField = userData?.DNI_Personal_Administrativo || "";
@@ -254,7 +290,7 @@ export async function buscarUsuarioGenericoPorRolYDNI(
 
   // Estructurar los datos según la interfaz GenericUser
   const genericUser: GenericUser = {
-    DNI_Usuario: dniField,
+    ID_O_DNI_Usuario: dniField,
     Rol: rol,
     Nombres: userData.Nombres,
     Apellidos: userData.Apellidos,
