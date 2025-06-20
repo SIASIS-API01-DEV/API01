@@ -128,6 +128,7 @@ MisAsistenciasMensualesRouter.get("/", (async (req: Request, res: Response) => {
       Nombres: personalData.Nombres,
       Apellidos: personalData.Apellidos,
       Genero: personalData.Genero,
+      Google_Drive_Foto_ID: personalData.Google_Drive_Foto_ID,
       Entradas: asistenciasData.Entradas,
       Salidas: asistenciasData.Salidas,
       Mes: mes as Meses,

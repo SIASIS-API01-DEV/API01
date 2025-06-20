@@ -113,6 +113,7 @@ AsistenciasMensualesDePersonalRouter.get(
         ID_O_DNI_Usuario: personalData.ID_O_DNI_Usuario,
         Rol: personalData.Rol,
         Nombres: personalData.Nombres,
+        Google_Drive_Foto_ID: personalData.Google_Drive_Foto_ID,
         Apellidos: personalData.Apellidos,
         Genero: personalData.Genero,
         Entradas: asistenciasData.Entradas,

@@ -1,29 +1,16 @@
 import {
-  T_Profesores_Secundaria,
-  T_Personal_Administrativo,
-} from "@prisma/client";
-import {
   DirectivoGenerico,
   AuxiliarGenerico,
   ProfesorPrimariaGenerico,
   ProfesorSecundariaGenerico,
   GenericUser,
+  TutorGenerico,
+  PersonalAdministrativoGenerico,
 } from "../../../../../src/interfaces/shared/GenericUser";
 import { Genero } from "../../../../../src/interfaces/shared/Genero";
 import { RDP02 } from "../../../../../src/interfaces/shared/RDP02Instancias";
 import { RolesSistema } from "../../../../../src/interfaces/shared/RolesSistema";
 import { query } from "../../../connectors/postgres";
-
-// Interfaces adicionales basadas en las tablas de Prisma
-export type TutorGenerico = Pick<
-  T_Profesores_Secundaria,
-  "DNI_Profesor_Secundaria" | "Nombres" | "Apellidos" | "Genero"
->;
-
-export type PersonalAdministrativoGenerico = Pick<
-  T_Personal_Administrativo,
-  "DNI_Personal_Administrativo" | "Nombres" | "Apellidos" | "Genero"
->;
 
 /**
  * Determina si un criterio de búsqueda es numérico (DNI) o texto (nombres/apellidos)
@@ -89,7 +76,7 @@ function construirClausulaWherePorNombres(
 }
 
 /**
- * Busca directivos por criterio flexible
+ * Busca directivos por criterio flexible - ACTUALIZADA
  */
 export async function buscarDirectivosPorCriterio(
   criterio?: string,
@@ -102,7 +89,8 @@ export async function buscarDirectivosPorCriterio(
       "DNI",
       "Nombres",
       "Apellidos", 
-      "Genero"
+      "Genero",
+      "Google_Drive_Foto_ID"
     FROM "T_Directivos"
   `;
 
@@ -141,7 +129,7 @@ export async function buscarDirectivosPorCriterio(
 }
 
 /**
- * Busca auxiliares por criterio flexible
+ * Busca auxiliares por criterio flexible - ACTUALIZADA
  */
 export async function buscarAuxiliaresPorCriterio(
   criterio?: string,
@@ -153,7 +141,8 @@ export async function buscarAuxiliaresPorCriterio(
       "DNI_Auxiliar",
       "Nombres",
       "Apellidos",
-      "Genero"
+      "Genero",
+      "Google_Drive_Foto_ID"
     FROM "T_Auxiliares"
     WHERE "Estado" = true
   `;
@@ -193,7 +182,7 @@ export async function buscarAuxiliaresPorCriterio(
 }
 
 /**
- * Busca profesores de primaria por criterio flexible
+ * Busca profesores de primaria por criterio flexible - ACTUALIZADA
  */
 export async function buscarProfesoresPrimariaPorCriterio(
   criterio?: string,
@@ -205,7 +194,8 @@ export async function buscarProfesoresPrimariaPorCriterio(
       "DNI_Profesor_Primaria",
       "Nombres",
       "Apellidos",
-      "Genero"
+      "Genero",
+      "Google_Drive_Foto_ID"
     FROM "T_Profesores_Primaria"
     WHERE "Estado" = true
   `;
@@ -245,7 +235,7 @@ export async function buscarProfesoresPrimariaPorCriterio(
 }
 
 /**
- * Busca profesores de secundaria por criterio flexible
+ * Busca profesores de secundaria por criterio flexible - ACTUALIZADA
  */
 export async function buscarProfesoresSecundariaPorCriterio(
   criterio?: string,
@@ -257,7 +247,8 @@ export async function buscarProfesoresSecundariaPorCriterio(
       "DNI_Profesor_Secundaria",
       "Nombres",
       "Apellidos",
-      "Genero"
+      "Genero",
+      "Google_Drive_Foto_ID"
     FROM "T_Profesores_Secundaria"
     WHERE "Estado" = true
   `;
@@ -297,7 +288,7 @@ export async function buscarProfesoresSecundariaPorCriterio(
 }
 
 /**
- * Busca tutores (profesores secundaria con aula) por criterio flexible
+ * Busca tutores (profesores secundaria con aula) por criterio flexible - ACTUALIZADA
  */
 export async function buscarTutoresPorCriterio(
   criterio?: string,
@@ -309,7 +300,8 @@ export async function buscarTutoresPorCriterio(
       p."DNI_Profesor_Secundaria",
       p."Nombres",
       p."Apellidos",
-      p."Genero"
+      p."Genero",
+      p."Google_Drive_Foto_ID"
     FROM "T_Profesores_Secundaria" p
     INNER JOIN "T_Aulas" a ON p."DNI_Profesor_Secundaria" = a."DNI_Profesor_Secundaria"
     WHERE p."Estado" = true
@@ -350,7 +342,7 @@ export async function buscarTutoresPorCriterio(
 }
 
 /**
- * Busca personal administrativo por criterio flexible
+ * Busca personal administrativo por criterio flexible - ACTUALIZADA
  */
 export async function buscarPersonalAdministrativoPorCriterio(
   criterio?: string,
@@ -362,7 +354,8 @@ export async function buscarPersonalAdministrativoPorCriterio(
       "DNI_Personal_Administrativo",
       "Nombres",
       "Apellidos",
-      "Genero"
+      "Genero",
+      "Google_Drive_Foto_ID"
     FROM "T_Personal_Administrativo"
     WHERE "Estado" = true
   `;
@@ -402,7 +395,7 @@ export async function buscarPersonalAdministrativoPorCriterio(
 }
 
 /**
- * Función principal para buscar usuarios genéricos por rol y criterio flexible
+ * Función principal para buscar usuarios genéricos por rol y criterio flexible - ACTUALIZADA
  * @param rol Rol del usuario a buscar
  * @param criterio Criterio de búsqueda (DNI, nombres, apellidos o combinación)
  * @param limite Máximo número de resultados (máx. 10)
@@ -419,7 +412,7 @@ export async function buscarUsuariosGenericosPorRolYCriterio(
   const limiteSeguro = Math.min(Math.max(1, limite), 10);
 
   let rawData: any[] = [];
-  let dniField: string = "";
+  let id_o_dniField: string = "";
 
   // Buscar según el rol específico
   switch (rol) {
@@ -430,7 +423,7 @@ export async function buscarUsuariosGenericosPorRolYCriterio(
         instanciaEnUso
       );
       rawData = directivos;
-      dniField = "Id_Directivo"; // Para directivos usamos el ID como identificador principal
+      id_o_dniField = "Id_Directivo"; // Para directivos usamos el ID como identificador principal
       break;
 
     case RolesSistema.Auxiliar:
@@ -440,7 +433,7 @@ export async function buscarUsuariosGenericosPorRolYCriterio(
         instanciaEnUso
       );
       rawData = auxiliares;
-      dniField = "DNI_Auxiliar";
+      id_o_dniField = "DNI_Auxiliar";
       break;
 
     case RolesSistema.ProfesorPrimaria:
@@ -450,7 +443,7 @@ export async function buscarUsuariosGenericosPorRolYCriterio(
         instanciaEnUso
       );
       rawData = profesoresPrimaria;
-      dniField = "DNI_Profesor_Primaria";
+      id_o_dniField = "DNI_Profesor_Primaria";
       break;
 
     case RolesSistema.ProfesorSecundaria:
@@ -460,7 +453,7 @@ export async function buscarUsuariosGenericosPorRolYCriterio(
         instanciaEnUso
       );
       rawData = profesoresSecundaria;
-      dniField = "DNI_Profesor_Secundaria";
+      id_o_dniField = "DNI_Profesor_Secundaria";
       break;
 
     case RolesSistema.Tutor:
@@ -470,7 +463,7 @@ export async function buscarUsuariosGenericosPorRolYCriterio(
         instanciaEnUso
       );
       rawData = tutores;
-      dniField = "DNI_Profesor_Secundaria";
+      id_o_dniField = "DNI_Profesor_Secundaria";
       break;
 
     case RolesSistema.PersonalAdministrativo:
@@ -480,7 +473,7 @@ export async function buscarUsuariosGenericosPorRolYCriterio(
         instanciaEnUso
       );
       rawData = personalAdmin;
-      dniField = "DNI_Personal_Administrativo";
+      id_o_dniField = "DNI_Personal_Administrativo";
       break;
 
     case RolesSistema.Responsable:
@@ -492,14 +485,15 @@ export async function buscarUsuariosGenericosPorRolYCriterio(
       throw new Error(`Rol no soportado: ${rol}`);
   }
 
-  // Convertir los datos raw a GenericUser
+  // Convertir los datos raw a GenericUser - ACTUALIZADA
   const usuariosGenericos: GenericUser[] = rawData.map((userData) => {
     const baseUser: GenericUser = {
-      ID_O_DNI_Usuario: userData[dniField]?.toString() || "", // Convertir a string por si es número
+      ID_O_DNI_Usuario: userData[id_o_dniField]?.toString() || "", // Convertir a string por si es número
       Rol: rol,
       Nombres: userData.Nombres,
       Apellidos: userData.Apellidos,
       Genero: userData.Genero as Genero,
+      Google_Drive_Foto_ID: userData.Google_Drive_Foto_ID || null, // CAMPO AGREGADO
     };
 
     // Solo para directivos: agregar el DNI en campo separado
