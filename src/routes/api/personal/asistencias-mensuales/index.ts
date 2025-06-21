@@ -44,7 +44,7 @@ AsistenciasMensualesDePersonalRouter.get(
       }
 
       // Validar formato del DNI (8 dígitos)
-      if (!/^\d{8}$/.test(idODni)) {
+      if (rol !== RolesSistema.Directivo && !/^\d{8}$/.test(idODni)) {
         return res.status(400).json({
           success: false,
           message: "El DNI debe tener exactamente 8 dígitos numéricos",
@@ -62,10 +62,7 @@ AsistenciasMensualesDePersonalRouter.get(
       }
 
       // Validar que el rol tiene control de asistencia
-      const rolesSinAsistencia = [
-        RolesSistema.Directivo,
-        RolesSistema.Responsable,
-      ];
+      const rolesSinAsistencia = [RolesSistema.Responsable];
       if (rolesSinAsistencia.includes(rol as RolesSistema)) {
         return res.status(400).json({
           success: false,

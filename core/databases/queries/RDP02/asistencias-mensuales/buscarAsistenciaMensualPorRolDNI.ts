@@ -294,21 +294,21 @@ export async function buscarResultadoConsultaAsistenciasMensualesAdministrativo(
  */
 export async function buscarAsistenciaMensualPorRol(
   rol: RolesSistema,
-  dni: string | number,
+  id_o_dni: string | number,
   mes: number,
   instanciaEnUso?: RDP02
 ): Promise<ResultadoConsultaAsistenciasMensuales | null> {
   switch (rol) {
     case RolesSistema.Directivo:
       return await buscarAsistenciaMensualDirectivo(
-        dni as number,
+        id_o_dni as number,
         mes,
         instanciaEnUso
       );
 
     case RolesSistema.ProfesorPrimaria:
       return await buscarAsistenciaMensualProfesorPrimaria(
-        dni as string,
+        id_o_dni as string,
         mes,
         instanciaEnUso
       );
@@ -316,21 +316,21 @@ export async function buscarAsistenciaMensualPorRol(
     case RolesSistema.ProfesorSecundaria:
     case RolesSistema.Tutor:
       return await buscarAsistenciaMensualProfesorSecundaria(
-        dni as string,
+        id_o_dni as string,
         mes,
         instanciaEnUso
       );
 
     case RolesSistema.Auxiliar:
       return await buscarAsistenciaMensualAuxiliar(
-        dni as string,
+        id_o_dni as string,
         mes,
         instanciaEnUso
       );
 
     case RolesSistema.PersonalAdministrativo:
       return await buscarResultadoConsultaAsistenciasMensualesAdministrativo(
-        dni as string,
+        id_o_dni as string,
         mes,
         instanciaEnUso
       );
