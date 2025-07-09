@@ -21,7 +21,7 @@ app.use(
     enabled: true,
     logAttempts: true,
     blockSuspiciousRequests: true,
-    checkHeaders: true,
+    checkHeaders: false,
     checkQueryParams: true,
     checkBody: true,
     // Configuraciones opcionales:
