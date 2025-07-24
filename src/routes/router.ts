@@ -25,8 +25,9 @@ import { RDP02 } from "../interfaces/shared/RDP02Instancias";
 import { RDP03 } from "../interfaces/shared/RDP03Instancias";
 import PersonalRouter from "./api/personal/index";
 import UsuarioGenericoRouter from "./api/usuarios-genericos";
-import VacacionesInterescolares from './api/vacaciones-interescolares'
+import VacacionesInterescolaresRouter from "./api/vacaciones-interescolares";
 import EventosRouter from "./api/eventos";
+import MiHorarioRouter from "./api/mi-horario";
 
 const router = Router();
 
@@ -99,14 +100,12 @@ router.use("/usuarios-genericos", decodedRol as any, UsuarioGenericoRouter);
 
 router.use("/eventos", decodedRol as any, EventosRouter);
 
-// ruta agregada por Gato (meow)
-router.use('/vacaciones-interescolares',
-  
-  decodedRol as any, 
-  VacacionesInterescolares
-)
+router.use("/mi-horario", decodedRol as any, MiHorarioRouter);
 
-
-
+router.use(
+  "/vacaciones-interescolares",
+  decodedRol as any,
+  VacacionesInterescolaresRouter
+);
 
 export default router;
