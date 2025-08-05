@@ -1,4 +1,3 @@
-// Enum para los tipos de identificadores (si no lo tienes ya importado)
 export enum TiposIdentificadores {
   DNI = 1,
   CARNET_EXTRANJERIA = 2,
