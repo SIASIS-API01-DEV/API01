@@ -256,7 +256,7 @@ EventosRouter.post(
       );
 
       // REPLICANDO EN INSTANCIAS DEL RDP03
-      await consultarConEMCN01({
+      await await consultarConEMCN01({
         collection:"T_Eventos",
         operation:"insertOne",
         data: transformarElementoParaRegistrarEnRDP03(eventoRegistrado, "Id_Evento")
@@ -477,7 +477,7 @@ EventosRouter.put(
       const eventoModificado = await modificarEvento(idEvento, datosModificacion, rdp02EnUso);
 
       // REPLICANDO EN INSTANCIAS DEL RDP03
-      consultarConEMCN01({
+      await consultarConEMCN01({
         collection:"T_Eventos",
         operation:"updateOne",
         filter:{_id :idEvento},
@@ -555,7 +555,7 @@ EventosRouter.delete(
       const eventoEliminado = await eliminarEvento(idEvento, rdp02EnUso);
 
       // REPLICANDO EN INSTANCIAS DEL RDP03
-      consultarConEMCN01({
+      await consultarConEMCN01({
         collection:"T_Eventos",
         operation:"deleteOne",
         filter:{_id: eventoEliminado.Id_Evento}
