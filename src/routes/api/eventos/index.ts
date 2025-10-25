@@ -63,7 +63,7 @@ EventosRouter.get(
       console.log("Parámetros recibidos:", { Mes, Año, Limit, Offset });
 
       // Parsear parámetros opcionales
-      const limit = Limit ? Number(Limit) : 10;
+      const limit = Limit ? Number(Limit) : MAXIMA_CANTIDAD_EVENTOS;
       const offset = Offset ? Number(Offset) : 0;
       const mes = Mes ? Number(Mes) : undefined;
       const año = Año ? Number(Año) : undefined;
