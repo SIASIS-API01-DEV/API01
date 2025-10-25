@@ -13,19 +13,38 @@ import isTutorAuthenticated from "../../../middlewares/isTutorAuthenticated";
 import isAuxiliarAuthenticated from "../../../middlewares/isAuxiliarAuthenticated";
 import isPersonalAdministrativoAuthenticated from "../../../middlewares/isPersonalAdministrativoAuthenticated";
 import checkAuthentication from "../../../middlewares/checkAuthentication";
-import { BuscarEventosParams, EliminarEventoSuccessResponse, GetEventosSuccessResponse, ModificarEventoRequestBody, ModificarEventoSuccessResponse, RegistrarEventoRequesBody, RegistrarEventoSuccessResponse } from "../../../interfaces/shared/apis/eventos/types";
-import { registrarEvento, verificarConflictoFechasExactas } from "../../../../core/databases/queries/RDP02/eventos/registrarEvento";
-import { buscarEventoPorId, eliminarEvento, verificarSiEventoPuedeEliminarse } from "../../../../core/databases/queries/RDP02/eventos/eliminarEventos";
-import { DatosModificacionEvento, determinarEstadoEvento, modificarEvento, verificarConflictoFechasExactasModificacion } from "../../../../core/databases/queries/RDP02/eventos/modificarEventos";
+import {
+  BuscarEventosParams,
+  EliminarEventoSuccessResponse,
+  GetEventosSuccessResponse,
+  ModificarEventoRequestBody,
+  ModificarEventoSuccessResponse,
+  RegistrarEventoRequesBody,
+  RegistrarEventoSuccessResponse,
+} from "../../../interfaces/shared/apis/eventos/types";
+import {
+  registrarEvento,
+  verificarConflictoFechasExactas,
+} from "../../../../core/databases/queries/RDP02/eventos/registrarEvento";
+import {
+  buscarEventoPorId,
+  eliminarEvento,
+  verificarSiEventoPuedeEliminarse,
+} from "../../../../core/databases/queries/RDP02/eventos/eliminarEventos";
+import {
+  DatosModificacionEvento,
+  determinarEstadoEvento,
+  modificarEvento,
+  verificarConflictoFechasExactasModificacion,
+} from "../../../../core/databases/queries/RDP02/eventos/modificarEventos";
 import { EstadoEvento } from "../../../interfaces/shared/EstadoEventos";
 import { consultarConEMCN01 } from "../../../../core/external/github/EMCN01/consultarConEMCN01";
-import {  transformarElementoParaRegistrarEnRDP03 } from "../../../interfaces/shared/RDP03/RDP03_Tablas";
+import { transformarElementoParaRegistrarEnRDP03 } from "../../../interfaces/shared/RDP03/RDP03_Tablas";
 import { RDP03 } from "../../../interfaces/shared/RDP03Instancias";
 
 const EventosRouter = Router();
 
-const MAXIMA_CANTIDAD_EVENTOS = 10;
-
+const MAXIMA_CANTIDAD_EVENTOS = 100; // Sin límite superior definido
 
 // Ruta para obtener eventos con paginación y filtrado por mes y año
 EventosRouter.get(
@@ -113,7 +132,9 @@ EventosRouter.get(
       // Generar mensaje apropiado según el tipo de búsqueda
       let message: string;
       if (mes !== undefined) {
-        message = `Se encontraron ${eventos.length} evento(s) de ${total} totales para el mes ${mes}${
+        message = `Se encontraron ${
+          eventos.length
+        } evento(s) de ${total} totales para el mes ${mes}${
           año ? ` del año ${año}` : ""
         }`;
       } else {
@@ -147,20 +168,25 @@ EventosRouter.post(
   checkAuthentication as any,
   (async (req: Request, res: Response) => {
     try {
-      const { Nombre, Fecha_Inicio, Fecha_Conclusion }: RegistrarEventoRequesBody = req.body;
+      const {
+        Nombre,
+        Fecha_Inicio,
+        Fecha_Conclusion,
+      }: RegistrarEventoRequesBody = req.body;
       const rdp02EnUso = req.RDP02_INSTANCE!;
 
       // Validar campos obligatorios
       if (!Nombre || !Fecha_Inicio || !Fecha_Conclusion) {
         return res.status(400).json({
           success: false,
-          message: "Los campos Nombre, Fecha_Inicio y Fecha_Conclusion son obligatorios",
+          message:
+            "Los campos Nombre, Fecha_Inicio y Fecha_Conclusion son obligatorios",
           errorType: RequestErrorTypes.MISSING_PARAMETERS,
         } as ErrorResponseAPIBase);
       }
 
       // Validar que Nombre no esté vacío y tenga longitud apropiada
-      if (typeof Nombre !== 'string' || Nombre.trim().length === 0) {
+      if (typeof Nombre !== "string" || Nombre.trim().length === 0) {
         return res.status(400).json({
           success: false,
           message: "El nombre del evento no puede estar vacío",
@@ -193,7 +219,8 @@ EventosRouter.post(
       if (fechaInicio > fechaConcusion) {
         return res.status(400).json({
           success: false,
-          message: "La fecha de inicio debe ser menor o igual a la fecha de conclusión",
+          message:
+            "La fecha de inicio debe ser menor o igual a la fecha de conclusión",
           errorType: RequestErrorTypes.INVALID_PARAMETERS,
         } as ErrorResponseAPIBase);
       }
@@ -201,19 +228,33 @@ EventosRouter.post(
       // Validar que no se puedan registrar eventos en fechas pasadas
       const fechaActual = new Date();
       // Normalizar fecha actual a solo fecha (sin hora) para comparación
-      const fechaActualSoloFecha = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate());
+      const fechaActualSoloFecha = new Date(
+        fechaActual.getFullYear(),
+        fechaActual.getMonth(),
+        fechaActual.getDate()
+      );
       // Normalizar fechas del evento a solo fecha (sin hora)
-      const fechaInicioSoloFecha = new Date(fechaInicio.getFullYear(), fechaInicio.getMonth(), fechaInicio.getDate());
-      const fechaConclusionSoloFecha = new Date(fechaConcusion.getFullYear(), fechaConcusion.getMonth(), fechaConcusion.getDate());
+      const fechaInicioSoloFecha = new Date(
+        fechaInicio.getFullYear(),
+        fechaInicio.getMonth(),
+        fechaInicio.getDate()
+      );
+      const fechaConclusionSoloFecha = new Date(
+        fechaConcusion.getFullYear(),
+        fechaConcusion.getMonth(),
+        fechaConcusion.getDate()
+      );
 
       // La fecha de inicio debe ser mayor que la fecha actual (desde mañana en adelante)
       if (fechaInicioSoloFecha <= fechaActualSoloFecha) {
         const fechaMañana = new Date(fechaActualSoloFecha);
         fechaMañana.setDate(fechaMañana.getDate() + 1);
-        
+
         return res.status(400).json({
           success: false,
-          message: `No se pueden registrar eventos en fechas pasadas o actuales. La fecha de inicio debe ser a partir del ${fechaMañana.toISOString().split('T')[0]}`,
+          message: `No se pueden registrar eventos en fechas pasadas o actuales. La fecha de inicio debe ser a partir del ${
+            fechaMañana.toISOString().split("T")[0]
+          }`,
           errorType: RequestErrorTypes.INVALID_PARAMETERS,
         } as ErrorResponseAPIBase);
       }
@@ -222,10 +263,12 @@ EventosRouter.post(
       if (fechaConclusionSoloFecha <= fechaActualSoloFecha) {
         const fechaMañana = new Date(fechaActualSoloFecha);
         fechaMañana.setDate(fechaMañana.getDate() + 1);
-        
+
         return res.status(400).json({
           success: false,
-          message: `No se pueden registrar eventos que concluyan en fechas pasadas o actuales. La fecha de conclusión debe ser a partir del ${fechaMañana.toISOString().split('T')[0]}`,
+          message: `No se pueden registrar eventos que concluyan en fechas pasadas o actuales. La fecha de conclusión debe ser a partir del ${
+            fechaMañana.toISOString().split("T")[0]
+          }`,
           errorType: RequestErrorTypes.INVALID_PARAMETERS,
         } as ErrorResponseAPIBase);
       }
@@ -240,7 +283,8 @@ EventosRouter.post(
       if (hayConflicto) {
         return res.status(409).json({
           success: false,
-          message: "Ya existe un evento con las mismas fechas de inicio y conclusión",
+          message:
+            "Ya existe un evento con las mismas fechas de inicio y conclusión",
           errorType: RequestErrorTypes.INVALID_PARAMETERS,
         } as ErrorResponseAPIBase);
       }
@@ -250,18 +294,23 @@ EventosRouter.post(
         {
           Nombre: Nombre.trim(),
           Fecha_Inicio: fechaInicio,
-          Fecha_Conclusion: fechaConcusion
+          Fecha_Conclusion: fechaConcusion,
         },
         rdp02EnUso
       );
 
       // REPLICANDO EN INSTANCIAS DEL RDP03
-      await await consultarConEMCN01({
-        collection:"T_Eventos",
-        operation:"insertOne",
-        data: transformarElementoParaRegistrarEnRDP03(eventoRegistrado, "Id_Evento")
-      }, [RDP03.INS1,RDP03.INS2,RDP03.INS3,RDP03.INS4,RDP03.INS5])
-      
+      await await consultarConEMCN01(
+        {
+          collection: "T_Eventos",
+          operation: "insertOne",
+          data: transformarElementoParaRegistrarEnRDP03(
+            eventoRegistrado,
+            "Id_Evento"
+          ),
+        },
+        [RDP03.INS1, RDP03.INS2, RDP03.INS3, RDP03.INS4, RDP03.INS5]
+      );
 
       // Respuesta exitosa
       return res.status(201).json({
@@ -269,7 +318,6 @@ EventosRouter.post(
         message: `Evento "${eventoRegistrado.Nombre}" registrado exitosamente`,
         data: eventoRegistrado,
       } as RegistrarEventoSuccessResponse);
-
     } catch (error) {
       console.error("Error al registrar evento:", error);
 
@@ -283,7 +331,6 @@ EventosRouter.post(
   }) as any
 );
 
-
 EventosRouter.put(
   "/:id",
   isDirectivoAuthenticated, // Solo directivos pueden modificar eventos
@@ -291,7 +338,11 @@ EventosRouter.put(
   (async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { Nombre, Fecha_Inicio, Fecha_Conclusion }: ModificarEventoRequestBody = req.body;
+      const {
+        Nombre,
+        Fecha_Inicio,
+        Fecha_Conclusion,
+      }: ModificarEventoRequestBody = req.body;
       const rdp02EnUso = req.RDP02_INSTANCE!;
 
       // Validar que el ID sea un número válido
@@ -332,7 +383,7 @@ EventosRouter.put(
           } as ErrorResponseAPIBase);
         }
 
-        if (typeof Nombre !== 'string' || Nombre.trim().length === 0) {
+        if (typeof Nombre !== "string" || Nombre.trim().length === 0) {
           return res.status(400).json({
             success: false,
             message: "El nombre del evento no puede estar vacío",
@@ -349,7 +400,7 @@ EventosRouter.put(
         }
 
         datosModificacion.Nombre = Nombre;
-        camposModificados.push('Nombre');
+        camposModificados.push("Nombre");
       }
 
       // Validar y procesar Fecha_Inicio
@@ -357,7 +408,9 @@ EventosRouter.put(
         if (!estadoEvento.puedeModificarInicio) {
           return res.status(403).json({
             success: false,
-            message: estadoEvento.razonRestricciones || "No se puede modificar la fecha de inicio de este evento",
+            message:
+              estadoEvento.razonRestricciones ||
+              "No se puede modificar la fecha de inicio de este evento",
             errorType: RequestErrorTypes.INVALID_PARAMETERS,
           } as ErrorResponseAPIBase);
         }
@@ -374,23 +427,33 @@ EventosRouter.put(
         // Para eventos futuros, validar que la nueva fecha de inicio sea futura
         if (estadoEvento.Estado === EstadoEvento.Pendiente) {
           const fechaActual = new Date();
-          const fechaActualSoloFecha = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate());
-          const fechaInicioSoloFecha = new Date(fechaInicio.getFullYear(), fechaInicio.getMonth(), fechaInicio.getDate());
+          const fechaActualSoloFecha = new Date(
+            fechaActual.getFullYear(),
+            fechaActual.getMonth(),
+            fechaActual.getDate()
+          );
+          const fechaInicioSoloFecha = new Date(
+            fechaInicio.getFullYear(),
+            fechaInicio.getMonth(),
+            fechaInicio.getDate()
+          );
 
           if (fechaInicioSoloFecha <= fechaActualSoloFecha) {
             const fechaMañana = new Date(fechaActualSoloFecha);
             fechaMañana.setDate(fechaMañana.getDate() + 1);
-            
+
             return res.status(400).json({
               success: false,
-              message: `La fecha de inicio debe ser a partir del ${fechaMañana.toISOString().split('T')[0]}`,
+              message: `La fecha de inicio debe ser a partir del ${
+                fechaMañana.toISOString().split("T")[0]
+              }`,
               errorType: RequestErrorTypes.INVALID_PARAMETERS,
             } as ErrorResponseAPIBase);
           }
         }
 
         datosModificacion.Fecha_Inicio = fechaInicio;
-        camposModificados.push('Fecha_Inicio');
+        camposModificados.push("Fecha_Inicio");
       }
 
       // Validar y procesar Fecha_Conclusion
@@ -398,7 +461,9 @@ EventosRouter.put(
         if (!estadoEvento.puedeModificarConclusión) {
           return res.status(403).json({
             success: false,
-            message: estadoEvento.razonRestricciones || "No se puede modificar la fecha de conclusión de este evento",
+            message:
+              estadoEvento.razonRestricciones ||
+              "No se puede modificar la fecha de conclusión de este evento",
             errorType: RequestErrorTypes.INVALID_PARAMETERS,
           } as ErrorResponseAPIBase);
         }
@@ -413,50 +478,74 @@ EventosRouter.put(
         }
 
         // Validar que la fecha de conclusión sea futura para eventos futuros y activos
-        if (estadoEvento.Estado === EstadoEvento.Pendiente || estadoEvento.Estado === EstadoEvento.Activo) {
+        if (
+          estadoEvento.Estado === EstadoEvento.Pendiente ||
+          estadoEvento.Estado === EstadoEvento.Activo
+        ) {
           const fechaActual = new Date();
-          const fechaActualSoloFecha = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate());
-          const fechaConclusionSoloFecha = new Date(fechaConcusion.getFullYear(), fechaConcusion.getMonth(), fechaConcusion.getDate());
+          const fechaActualSoloFecha = new Date(
+            fechaActual.getFullYear(),
+            fechaActual.getMonth(),
+            fechaActual.getDate()
+          );
+          const fechaConclusionSoloFecha = new Date(
+            fechaConcusion.getFullYear(),
+            fechaConcusion.getMonth(),
+            fechaConcusion.getDate()
+          );
 
           // Para eventos activos, la fecha de conclusión debe ser hoy o futura
-          const fechaMinimaPermitida = estadoEvento.Estado === EstadoEvento.Activo ? fechaActualSoloFecha : fechaActualSoloFecha;
+          const fechaMinimaPermitida =
+            estadoEvento.Estado === EstadoEvento.Activo
+              ? fechaActualSoloFecha
+              : fechaActualSoloFecha;
 
           if (fechaConclusionSoloFecha < fechaMinimaPermitida) {
             return res.status(400).json({
               success: false,
-              message: `La fecha de conclusión no puede ser anterior a ${estadoEvento.Estado === EstadoEvento.Activo ? 'hoy' : 'mañana'}`,
+              message: `La fecha de conclusión no puede ser anterior a ${
+                estadoEvento.Estado === EstadoEvento.Activo ? "hoy" : "mañana"
+              }`,
               errorType: RequestErrorTypes.INVALID_PARAMETERS,
             } as ErrorResponseAPIBase);
           }
         }
 
         datosModificacion.Fecha_Conclusion = fechaConcusion;
-        camposModificados.push('Fecha_Conclusion');
+        camposModificados.push("Fecha_Conclusion");
       }
 
       // Verificar que se envió al menos un campo para modificar
       if (camposModificados.length === 0) {
         return res.status(400).json({
           success: false,
-          message: "Debe proporcionar al menos un campo para modificar (Nombre, Fecha_Inicio, Fecha_Conclusion)",
+          message:
+            "Debe proporcionar al menos un campo para modificar (Nombre, Fecha_Inicio, Fecha_Conclusion)",
           errorType: RequestErrorTypes.MISSING_PARAMETERS,
         } as ErrorResponseAPIBase);
       }
 
       // Validar relación entre fechas si se modifican ambas o una en relación con la existente
-      const fechaInicioFinal = datosModificacion.Fecha_Inicio || new Date(eventoActual.Fecha_Inicio);
-      const fechaConclusionFinal = datosModificacion.Fecha_Conclusion || new Date(eventoActual.Fecha_Conclusion);
+      const fechaInicioFinal =
+        datosModificacion.Fecha_Inicio || new Date(eventoActual.Fecha_Inicio);
+      const fechaConclusionFinal =
+        datosModificacion.Fecha_Conclusion ||
+        new Date(eventoActual.Fecha_Conclusion);
 
       if (fechaInicioFinal > fechaConclusionFinal) {
         return res.status(400).json({
           success: false,
-          message: "La fecha de inicio debe ser menor o igual a la fecha de conclusión",
+          message:
+            "La fecha de inicio debe ser menor o igual a la fecha de conclusión",
           errorType: RequestErrorTypes.INVALID_PARAMETERS,
         } as ErrorResponseAPIBase);
       }
 
       // Verificar conflicto de fechas exactas con otros eventos
-      if ((datosModificacion.Fecha_Inicio || datosModificacion.Fecha_Conclusion)) {
+      if (
+        datosModificacion.Fecha_Inicio ||
+        datosModificacion.Fecha_Conclusion
+      ) {
         const hayConflicto = await verificarConflictoFechasExactasModificacion(
           fechaInicioFinal,
           fechaConclusionFinal,
@@ -467,25 +556,37 @@ EventosRouter.put(
         if (hayConflicto) {
           return res.status(409).json({
             success: false,
-            message: "Ya existe otro evento con las mismas fechas de inicio y conclusión",
+            message:
+              "Ya existe otro evento con las mismas fechas de inicio y conclusión",
             errorType: RequestErrorTypes.INVALID_PARAMETERS,
           } as ErrorResponseAPIBase);
         }
       }
 
       // Modificar el evento
-      const eventoModificado = await modificarEvento(idEvento, datosModificacion, rdp02EnUso);
+      const eventoModificado = await modificarEvento(
+        idEvento,
+        datosModificacion,
+        rdp02EnUso
+      );
 
       // REPLICANDO EN INSTANCIAS DEL RDP03
-      await consultarConEMCN01({
-        collection:"T_Eventos",
-        operation:"updateOne",
-        filter:{_id :idEvento},
-        data:{
-          $set: (({_id, ...restoDePropiedades})=>restoDePropiedades)(transformarElementoParaRegistrarEnRDP03(eventoModificado, "Id_Evento"))
-        }
-      }, [RDP03.INS1,RDP03.INS2,RDP03.INS3,RDP03.INS4,RDP03.INS5
-      ])
+      await consultarConEMCN01(
+        {
+          collection: "T_Eventos",
+          operation: "updateOne",
+          filter: { _id: idEvento },
+          data: {
+            $set: (({ _id, ...restoDePropiedades }) => restoDePropiedades)(
+              transformarElementoParaRegistrarEnRDP03(
+                eventoModificado,
+                "Id_Evento"
+              )
+            ),
+          },
+        },
+        [RDP03.INS1, RDP03.INS2, RDP03.INS3, RDP03.INS4, RDP03.INS5]
+      );
 
       // Respuesta exitosa
       return res.status(200).json({
@@ -495,7 +596,6 @@ EventosRouter.put(
         camposModificados,
         Estado: estadoEvento.Estado,
       } as ModificarEventoSuccessResponse);
-
     } catch (error) {
       console.error("Error al modificar evento:", error);
 
@@ -508,7 +608,6 @@ EventosRouter.put(
     }
   }) as any
 );
-
 
 EventosRouter.delete(
   "/:id",
@@ -541,7 +640,8 @@ EventosRouter.delete(
       }
 
       // Verificar si el evento puede ser eliminado
-      const { puedeEliminarse, razon } = verificarSiEventoPuedeEliminarse(evento);
+      const { puedeEliminarse, razon } =
+        verificarSiEventoPuedeEliminarse(evento);
 
       if (!puedeEliminarse) {
         return res.status(403).json({
@@ -555,11 +655,14 @@ EventosRouter.delete(
       const eventoEliminado = await eliminarEvento(idEvento, rdp02EnUso);
 
       // REPLICANDO EN INSTANCIAS DEL RDP03
-      await consultarConEMCN01({
-        collection:"T_Eventos",
-        operation:"deleteOne",
-        filter:{_id: eventoEliminado.Id_Evento}
-      }, [RDP03.INS1,RDP03.INS2,RDP03.INS3, RDP03.INS4, RDP03.INS5])
+      await consultarConEMCN01(
+        {
+          collection: "T_Eventos",
+          operation: "deleteOne",
+          filter: { _id: eventoEliminado.Id_Evento },
+        },
+        [RDP03.INS1, RDP03.INS2, RDP03.INS3, RDP03.INS4, RDP03.INS5]
+      );
 
       // Respuesta exitosa
       return res.status(200).json({
@@ -567,7 +670,6 @@ EventosRouter.delete(
         message: `Evento "${eventoEliminado.Nombre}" eliminado exitosamente`,
         data: eventoEliminado,
       } as EliminarEventoSuccessResponse);
-
     } catch (error) {
       console.error("Error al eliminar evento:", error);
 
@@ -580,6 +682,5 @@ EventosRouter.delete(
     }
   }) as any
 );
-
 
 export default EventosRouter;
