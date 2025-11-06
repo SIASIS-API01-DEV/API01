@@ -15,8 +15,8 @@ export enum RequestErrorTypes {
   INVALID_PARAMETERS = "INVALID_PARAMETERS",
   MISSING_PARAMETERS = "MISSING_PARAMETERS",
   REQUEST_FAILED = "REQUEST_FAILED",
-  MALFORMED_REQUEST = "MALFORMED_REQUEST", 
-  PAYLOAD_TOO_LARGE = "PAYLOAD_TOO_LARGE", 
+  MALFORMED_REQUEST = "MALFORMED_REQUEST",
+  PAYLOAD_TOO_LARGE = "PAYLOAD_TOO_LARGE",
   RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND", // Recurso solicitado no encontrado
   METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED", // Método HTTP no permitido
 }
@@ -237,8 +237,6 @@ export default AllErrorTypes;
 // ================================================================
 // 🔄 EXPORTACIONES PARA RETROCOMPATIBILIDAD
 // ================================================================
-
-
 
 /**
  * 🆕 Grupos de errores para facilitar el manejo
