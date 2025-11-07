@@ -12,7 +12,7 @@ import {
 } from "../../../interfaces/shared/errors";
 import { ErrorResponseAPIBase } from "../../../interfaces/shared/apis/types";
 import {
-  GetReportesAsistenciaEscolarSuccessResponse,
+  GetReporteAsistenciaEscolarSuccessResponse,
   GetTodosLosReportesAsistenciaEscolarSuccessResponse,
 } from "../../../interfaces/shared/apis/api01/reportes-asistencia-escolar/types";
 import { ReporteAsistenciaEscolarAnonimo } from "../../../interfaces/shared/ReporteAsistenciaEscolar";
@@ -153,7 +153,7 @@ router.get(
         success: true,
         message: "Reporte obtenido exitosamente",
         data: reporteAnonimo,
-      } as GetReportesAsistenciaEscolarSuccessResponse);
+      } as GetReporteAsistenciaEscolarSuccessResponse);
     } catch (error) {
       console.error("Error al obtener reporte específico:", error);
 

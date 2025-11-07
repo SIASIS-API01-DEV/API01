@@ -7,7 +7,7 @@ export interface GetTodosLosReportesAsistenciaEscolarSuccessResponse
   total: number;
 }
 
-export interface GetReportesAsistenciaEscolarSuccessResponse
+export interface GetReporteAsistenciaEscolarSuccessResponse
   extends SuccessResponseAPIBase {
   data: ReporteAsistenciaEscolarAnonimo;
 }
