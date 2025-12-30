@@ -107,6 +107,7 @@ router.use(
   isProfesorSecundariaAuthenticated,
   isTutorAuthenticated,
   isPersonalAdministrativoAuthenticated as any,
+  // isResponsableAuthenticated,
   checkAuthentication as any,
   decodedRol as any,
   MiHorarioRouter
