@@ -99,7 +99,18 @@ router.use("/usuarios-genericos", decodedRol as any, UsuarioGenericoRouter);
 
 router.use("/eventos", decodedRol as any, EventosRouter);
 
-router.use("/mi-horario", decodedRol as any, MiHorarioRouter);
+router.use(
+  "/mi-horario",
+  isDirectivoAuthenticated,
+  isAuxiliarAuthenticated,
+  isProfesorPrimariaAuthenticated,
+  isProfesorSecundariaAuthenticated,
+  isTutorAuthenticated,
+  isPersonalAdministrativoAuthenticated as any,
+  checkAuthentication as any,
+  decodedRol as any,
+  MiHorarioRouter
+);
 
 router.use(
   "/vacaciones-interescolares",

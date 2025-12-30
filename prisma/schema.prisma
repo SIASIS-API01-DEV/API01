@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("RDP02_INS3_DATABASE_URL_DESA")
+  
 }
 
 model T_Directivos {
