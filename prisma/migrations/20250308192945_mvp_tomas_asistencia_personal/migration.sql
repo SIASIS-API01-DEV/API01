@@ -30,14 +30,14 @@ CREATE TABLE "T_Ajustes_Generales_Sistema" (
 );
 
 -- CreateTable
-CREATE TABLE "T_Horarios_Asistencia" (
+CREATE TABLE "T_Horarios_Generales" (
     "Id_Horario" SERIAL NOT NULL,
     "Nombre" VARCHAR(100) NOT NULL,
     "Valor" TIME NOT NULL,
     "Descripcion" TEXT NOT NULL,
     "Ultima_Modificacion" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "T_Horarios_Asistencia_pkey" PRIMARY KEY ("Id_Horario")
+    CONSTRAINT "T_Horarios_Generales_pkey" PRIMARY KEY ("Id_Horario")
 );
 
 -- CreateTable
@@ -64,4 +64,4 @@ CREATE TABLE "T_Registro_Fallos_Sistema" (
 CREATE UNIQUE INDEX "T_Ajustes_Generales_Sistema_Nombre_key" ON "T_Ajustes_Generales_Sistema"("Nombre");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "T_Horarios_Asistencia_Nombre_key" ON "T_Horarios_Asistencia"("Nombre");
+CREATE UNIQUE INDEX "T_Horarios_Generales_Nombre_key" ON "T_Horarios_Generales"("Nombre");

@@ -32,7 +32,7 @@ export async function obtenerHorariosAsistencia(
     SELECT 
       "Nombre",
       "Valor"
-    FROM "T_Horarios_Asistencia"
+    FROM "T_Horarios_Generales"
     WHERE "Nombre" IN (${placeholders})
   `;
 

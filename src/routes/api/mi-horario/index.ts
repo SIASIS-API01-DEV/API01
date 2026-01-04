@@ -34,7 +34,7 @@ router.get("/", (async (req: Request, res: Response) => {
     const user = req.user!;
     const rol = req.userRole!;
     const rdp02EnUso = req.RDP02_INSTANCE!;
-    
+
     // Validar que el rol no sea Responsable
     if (rol === RolesSistema.Responsable) {
       return res.status(400).json({
@@ -82,8 +82,8 @@ router.get("/", (async (req: Request, res: Response) => {
     ];
 
     const horariosNecesarios = [
-      "Hora_Inicio_Asistencia_Secundaria",
-      "Hora_Final_Asistencia_Secundaria",
+      "Inicio_Horario_Escolar_Secundaria",
+      "Fin_Horario_Escolar_Secundaria",
       "Inicio_Horario_Laboral_Secundaria",
       "Fin_Horario_Laboral_Secundaria",
       "Inicio_Horario_Laboral_Auxiliar",
@@ -110,7 +110,7 @@ router.get("/", (async (req: Request, res: Response) => {
 
     // Convertir horarios a Hora_Minuto_Segundo
     const horaInicioAsistenciaSecundaria = convertirTimeToHMS(
-      horarios.Hora_Inicio_Asistencia_Secundaria
+      horarios.Inicio_Horario_Escolar_Secundaria
     );
     const horarioLaboralInicioSecundaria = convertirTimeToHMS(
       horarios.Inicio_Horario_Laboral_Secundaria
