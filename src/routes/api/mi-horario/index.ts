@@ -26,6 +26,8 @@ import { obtenerHorariosAsistencia } from "../../../../core/databases/queries/RD
 import { obtenerCursosHorarioPorProfesor } from "../../../../core/databases/queries/RDP02/cursos-horario/obtenerCursosHorarioPorProfesor";
 import { obtenerHorariosPorDiasDirectivo } from "../../../../core/databases/queries/RDP02/horarios-por-dias-directivos/obtenerHorariosPorDiasDIrectivo";
 import { obtenerHorariosPorDiasPersonalAdministrativo } from "../../../../core/databases/queries/RDP02/horario-por-dias-personal-administrativo/obtenerHorarioPorDiasPersonalAdministrativo";
+import { obtenerRecreosPorNivel } from "../../../../core/databases/queries/RDP02/recreos/obtenerRecreos";
+import { NivelEducativo } from "../../../interfaces/shared/NivelEducativo";
 
 const router = Router();
 
@@ -75,11 +77,7 @@ router.get("/", (async (req: Request, res: Response) => {
     }
 
     // Obtener constantes y horarios necesarios para todos los roles
-    const constantesNecesarias = [
-      "BLOQUE_INICIO_RECREO_SECUNDARIA",
-      "DURACION_RECREO_SECUNDARIA_MINUTOS",
-      "DURACION_HORA_ACADEMICA_MINUTOS",
-    ];
+    const constantesNecesarias = ["DURACION_HORA_ACADEMICA_MINUTOS"];
 
     const horariosNecesarios = [
       "Inicio_Horario_Escolar_Secundaria",
@@ -92,18 +90,26 @@ router.get("/", (async (req: Request, res: Response) => {
       "Fin_Horario_Laboral_Profesores_Primaria",
     ];
 
-    const [constantes, horarios] = await Promise.all([
+    // Obtener recreos de secundaria desde la nueva tabla
+    const [constantes, horarios, recreosSecundaria] = await Promise.all([
       obtenerConstantesAjustesGenerales(constantesNecesarias, rdp02EnUso),
       obtenerHorariosAsistencia(horariosNecesarios, rdp02EnUso),
+      obtenerRecreosPorNivel(NivelEducativo.SECUNDARIA, rdp02EnUso),
     ]);
 
+    // Validar que exista al menos un recreo para secundaria
+    if (recreosSecundaria.length === 0) {
+      return res.status(500).json({
+        success: false,
+        message: "No se encontraron configuraciones de recreo para secundaria",
+        errorType: SystemErrorTypes.UNKNOWN_ERROR,
+      } as ErrorResponseAPIBase);
+    }
+
+    // Usar el primer recreo (podrías agregar lógica para múltiples recreos)
+    const recreoSecundaria = recreosSecundaria[0];
+
     // Parsear constantes
-    const bloqueInicioRecreo = parseInt(
-      constantes.BLOQUE_INICIO_RECREO_SECUNDARIA
-    );
-    const duracionRecreoMinutos = parseInt(
-      constantes.DURACION_RECREO_SECUNDARIA_MINUTOS
-    );
     const duracionHoraAcademica = parseInt(
       constantes.DURACION_HORA_ACADEMICA_MINUTOS
     );
@@ -119,7 +125,10 @@ router.get("/", (async (req: Request, res: Response) => {
       horarios.Fin_Horario_Laboral_Secundaria
     );
 
-    // Calcular recreos de secundaria (común para varios roles)
+    // Calcular recreos de secundaria usando datos de la tabla T_Recreos
+    const bloqueInicioRecreo = recreoSecundaria.Bloque_Inicio!;
+    const duracionRecreoMinutos = recreoSecundaria.Duracion_Minutos;
+
     const recreos = calcularRecreosSecundaria(
       horaInicioAsistenciaSecundaria,
       duracionHoraAcademica,

@@ -362,6 +362,17 @@ model T_Vacaciones_Interescolares {
   @@map("T_Vacaciones_Interescolares")
 }
 
+model T_Recreos {
+  Id_Recreo           Int       @id @default(autoincrement())
+  Nivel_Educativo     String    @db.VarChar(1)
+  Hora_Inicio         DateTime? @db.Time
+  Bloque_Inicio       Int?      @db.Integer
+  Duracion_Minutos    Int      @db.Integer
+  Ultima_Modificacion DateTime  @default(now())
+
+  @@map("T_Recreos")
+}
+
 model T_Reportes_Asistencia_Escolar {
   Combinacion_Parametros_Reporte String   @id @db.VarChar(40)
   Estado_Reporte                 String   @db.VarChar(20)
